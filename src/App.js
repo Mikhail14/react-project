@@ -1,6 +1,6 @@
 import logo from './logo.svg';
 import './App.css';
-import {useState} from 'react'
+import { useState } from 'react'
 
 // Символы
 const SYMBOL_X = 'X'
@@ -29,6 +29,7 @@ const computeWinner = (cells) => {
   }
 }
 
+// Рендер страницы
 function App() {
   // Ячейки, текущий ход и победитель
   const [cells, setCells] = useState(new Array(9).fill(null))
@@ -36,15 +37,6 @@ function App() {
   const [winnerSequence, setWinnerSequence] = useState()
   const [isDraw, setIsDraw] = useState(false)
 
-  // Получить имя класса
-  const getSymbolClassName = (symbol) => {
-    if (symbol === SYMBOL_O) return 'symbol--o'
-    if (symbol === SYMBOL_X) return 'symbol--x'
-    return ''
-  }
-
-  // Рендер символов
-  const renderSymbol = (symbol) => <span className={`symbol ${getSymbolClassName(symbol)}`}>{symbol}</span>
 
   // Символ победителя
   const winnerSymbol = winnerSequence ? cells[winnerSequence[0]] : undefined
@@ -53,11 +45,11 @@ function App() {
   const handleCellClick = (index) => {
     if (cells[index] || winnerSequence) {
       return
-    } 
+    }
     const cellsCopy = cells.slice()
     cellsCopy[index] = currentStep
     const winner = computeWinner(cellsCopy)
-    
+
     setCells(cellsCopy)
     setCurrentStep(currentStep === SYMBOL_O ? SYMBOL_X : SYMBOL_O)
     setWinnerSequence(winner)
@@ -65,29 +57,34 @@ function App() {
     setIsDraw(findNullCell !== null && !winner)
   }
 
-  // Рендер страницы
   return (
     <div className="App">
       <div className='game'>
-        <div className='game-info'>
-          {winnerSequence ? 'Победитель: ' : isDraw ? '' : 'Ход: '} {!isDraw ? renderSymbol(winnerSymbol ?? currentStep) : 'Ничья!'}
-        </div>
-        
+        <GameInfo
+          winnerSymbol={winnerSymbol}
+          isDraw={isDraw}
+          currentStep={currentStep}
+        />
+
         <div className='game-field'>
           {
             cells.map((symbol, index) => {
               // ? - не будет вызывать в случае underfined
               const isWinner = winnerSequence?.includes(index)
-              return <button 
-                      key={index} 
-                      className={`cell ${isWinner ? 'cell--win' : ''}`} 
-                      onClick={() => handleCellClick(index)}>{symbol ? renderSymbol(symbol) : null}</button>
+              return (
+                <GameCell
+                  key={index}
+                  isWinner={isWinner}
+                  onClick={() => handleCellClick(index)}
+                  symbol={symbol}
+                />
+              ) 
             })
           }
         </div>
 
         <div>
-          <button 
+          <button
             onClick={() => {
               setCells(new Array(9).fill(null))
               setWinnerSequence(null)
@@ -100,27 +97,48 @@ function App() {
   );
 }
 
+// Рендер символов
+function GameSymbol({ symbol }) {
+  // Получить имя класса
+  const getSymbolClassName = (symbol) => {
+    if (symbol === SYMBOL_O) return 'symbol--o'
+    if (symbol === SYMBOL_X) return 'symbol--x'
+    return ''
+  }
+  return <span className={`symbol ${getSymbolClassName(symbol)}`}>{symbol}</span>
+}
+
+// Информационная панель
+function GameInfo({ winnerSymbol, isDraw, currentStep }) {
+  if (isDraw) {
+    return (
+      <div className='game-info'>Ничья!</div>
+    )
+  }
+
+  if (winnerSymbol) {
+    return (
+      <div className='game-info'>
+        Победитель: <GameSymbol symbol={winnerSymbol} />
+      </div>
+    )
+  }
+
+  return (
+    <div className='game-info'>
+      Ход: <GameSymbol symbol={currentStep} />
+    </div>
+  )
+}
+
+// Игровые ячейки
+function GameCell({ isWinner, onClick, symbol }) {
+  return (
+    <button
+      className={`cell ${isWinner ? 'cell--win' : ''}`}
+      onClick={onClick}>{symbol ? <GameSymbol symbol={symbol} /> : null}
+    </button>
+  )
+}
+
 export default App;
-
-
-
-
-{/* <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header> */}
-
-
-      // Урок 2. Домашнее задание
-      // 1. Сделать кнопку сброс
-      // 2. Реализовать сценарий ничьи
