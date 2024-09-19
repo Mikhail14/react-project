@@ -29,14 +29,12 @@ const computeWinner = (cells) => {
   }
 }
 
-// Рендер страницы
-function App() {
-  // Ячейки, текущий ход и победитель
+function useGameState() {
+  // Ячейки, текущий ход, победитель и определение ничьи
   const [cells, setCells] = useState(new Array(9).fill(null))
   const [currentStep, setCurrentStep] = useState(SYMBOL_O)
   const [winnerSequence, setWinnerSequence] = useState()
   const [isDraw, setIsDraw] = useState(false)
-
 
   // Символ победителя
   const winnerSymbol = winnerSequence ? cells[winnerSequence[0]] : undefined
@@ -56,6 +54,35 @@ function App() {
     const findNullCell = cellsCopy.find(c => c === null)
     setIsDraw(findNullCell !== null && !winner)
   }
+
+  const handleResetClick = () => {
+    setCells(new Array(9).fill(null))
+    setWinnerSequence(null)
+    setIsDraw(false)
+  }
+
+  return {
+    cells,
+    currentStep,
+    winnerSequence,
+    isDraw,
+    winnerSymbol,
+    handleCellClick,
+    handleResetClick
+  }
+}
+
+// Рендер страницы
+function App() {
+  const {
+    cells,
+    currentStep,
+    winnerSequence,
+    isDraw,
+    winnerSymbol,
+    handleCellClick,
+    handleResetClick
+  } = useGameState();
 
   return (
     <div className="App">
@@ -78,18 +105,14 @@ function App() {
                   onClick={() => handleCellClick(index)}
                   symbol={symbol}
                 />
-              ) 
+              )
             })
           }
         </div>
 
         <div>
           <button
-            onClick={() => {
-              setCells(new Array(9).fill(null))
-              setWinnerSequence(null)
-              setIsDraw(false)
-            }}
+            onClick={() => handleResetClick()}
             className='reset'>Начать заново</button>
         </div>
       </div>
@@ -142,3 +165,7 @@ function GameCell({ isWinner, onClick, symbol }) {
 }
 
 export default App;
+
+// Хуки
+// 1. Вызов только внутри компонентов
+// 2. Вызов не может быть в циклах и условиях
